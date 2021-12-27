@@ -9,6 +9,9 @@ from db_connection import DBConnection
 class DBQuery:
 
     def __init__(self):
+        """
+            desc: establish connection
+        """
         self.connection = DBConnection.establish_connection()
         self.cursor = self.connection.cursor()
 
