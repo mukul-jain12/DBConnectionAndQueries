@@ -1,39 +1,24 @@
 """
-    @File :   connection_and_query.py
+    @File :   db_queries.py
     @Author : mukul
     @Date :   26-12-2021
 """
-from getpass import getpass
-from mysql.connector import connect, Error
+from db_connection import DBConnection
 
 
-class DBConnection:
+class DBQuery:
 
-    @staticmethod
-    def establish_connection(query):
-        """
-            desc: Established database connection and perform query to created database
-        """
-        try:
-            with connect(
-                    host="localhost",
-                    user="root",
-                    password="Mukul@1008",
-                    database="online_movie_rating",
-            ) as connection:
-                with connection.cursor() as cursor:
-                    cursor.execute(query)
-                    for movies in cursor.fetchall():
-                        print(movies)
-        except Error as e:
-            print(e)
+    def __init__(self):
+        self.connection = DBConnection.establish_connection()
+        self.cursor = self.connection.cursor()
 
     def create_database(self):
         """
-            desc: creating databses
+            desc: creating databases
         """
         create_db_query = "CREATE DATABASE online_movie_rating"
-        self.establish_connection(create_db_query)
+        self.cursor.execute(create_db_query)
+        self.connection.commit()
 
     def create_movie_table(self):
         """
@@ -49,7 +34,8 @@ class DBConnection:
             collection_in_mil INT
         )
         """
-        self.establish_connection(movies_table_query)
+        self.cursor.execute(movies_table_query)
+        self.connection.commit()
 
     def create_reviewer_table(self):
         """
@@ -63,7 +49,8 @@ class DBConnection:
             last_name VARCHAR(100)
         )
         """
-        self.establish_connection(reviewers_table_query)
+        self.cursor.execute(reviewers_table_query)
+        self.connection.commit()
 
     def create_rating_table(self):
         """
@@ -80,7 +67,8 @@ class DBConnection:
             PRIMARY KEY(movie_id, reviewer_id)
         )
         """
-        self.establish_connection(ratings_table_query)
+        self.cursor.execute(ratings_table_query)
+        self.connection.commit()
 
     def alter_table(self):
         """
@@ -89,7 +77,8 @@ class DBConnection:
         alter_table_query = """
             ALTER TABLE movies MODIFY COLUMN collection_in_mil DECIMAL(4,1)
             """
-        self.establish_connection(alter_table_query)
+        self.cursor.execute(alter_table_query)
+        self.connection.commit()
 
     def insert_movie_data(self):
         """
@@ -129,7 +118,8 @@ class DBConnection:
             ("Deadpool", 2016, "Action", 363.6),
             ("Drishyam", 2015, "Mystery", 3.0)
         """
-        self.establish_connection(insert_movies_query)
+        self.cursor.execute(insert_movies_query)
+        self.connection.commit()
 
     def insert_reviewer_data(self):
         """
@@ -161,7 +151,8 @@ class DBConnection:
             ("Amy", "Farah Fowler"),
             ("Marlon", "Crafford")
         """
-        self.establish_connection(insert_reviewers_query)
+        self.cursor.execute(insert_reviewers_query)
+        self.connection.commit()
 
     def insert_ratings_data(self):
         """
@@ -183,32 +174,59 @@ class DBConnection:
             (6.4, 5, 10), (8.1, 5, 21), (5.7, 22, 1), (6.3, 28, 4),
             (9.8, 13, 1)
         """
-        self.establish_connection(insert_ratings_query)
+        self.cursor.execute(insert_ratings_query)
+        self.connection.commit()
 
     def delete_table(self):
         """
             desc: delete the table
         """
         delete_query = "drop table movies"
-        self.establish_connection(delete_query)
+        self.cursor.execute(delete_query)
+        self.connection.commit()
 
     def show_tables(self):
         """
             desc: show the data from the table
         """
         show_data_query = "select * from movies"
-        self.establish_connection(show_data_query)
+        self.cursor.execute(show_data_query)
+        for database in self.cursor:
+            print(database)
+
+    def handle_data_using_join(self):
+        """
+            desc: show the data from the table
+        """
+        join_query = "select title, AVG(rating) as avg_rating from ratings " \
+                     "inner join movies ON movies.id = ratings.movie_id GROUP BY movie_id " \
+                     "ORDER BY avg_rating DESC " \
+                     "limit 5;"
+        self.cursor.execute(join_query)
+        for movie in self.cursor.fetchall():
+            print(movie)
+
+    def update_table(self):
+        """
+            desc: show the data from the table
+        """
+        update_query = """update reviewers set last_name = "Cooper" where first_name = "Amy" """
+        self.cursor.execute(update_query)
+        for movie in self.cursor.fetchall():
+            print(movie)
 
 
 if __name__ == "__main__":
-    db_connect = DBConnection()
-    db_connect.create_database()
-    db_connect.create_movie_table()
-    db_connect.create_reviewer_table()
-    db_connect.create_rating_table()
-    db_connect.insert_movie_data()
-    db_connect.insert_reviewer_data()
-    db_connect.insert_ratings_data()
-    db_connect.alter_table()
-    db_connect.delete_table()
-    db_connect.show_tables()
+    db_query = DBQuery()
+    db_query.create_database()
+    db_query.create_movie_table()
+    db_query.create_reviewer_table()
+    db_query.create_rating_table()
+    db_query.insert_movie_data()
+    db_query.insert_reviewer_data()
+    db_query.insert_ratings_data()
+    db_query.alter_table()
+    db_query.delete_table()
+    db_query.show_tables()
+    db_query.handle_data_using_join()
+    db_query.update_table()
